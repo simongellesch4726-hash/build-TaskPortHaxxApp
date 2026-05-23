@@ -39,7 +39,7 @@ jobs:
       - name: Build IPA
         run: |
           export PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
-          make package FINALPACKAGE=1
+          make package FINALPACKAGE=1 TaskPortHaxxApp_LDFLAGS="-lz"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
