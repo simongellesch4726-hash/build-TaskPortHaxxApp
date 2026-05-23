@@ -9,20 +9,23 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install build dependencies
-        run: |
-          brew install libarchive ldid make
+        run: brew install libarchive ldid make
 
       - name: Clone Theos
-        run: |
-          git clone --recursive https://github.com/theos/theos.git $THEOS
+        run: git clone --recursive https://github.com/theos/theos.git $THEOS
 
-      - name: Install patched SDKs
+      - name: Install patched SDKs (remove existing sdks folder first)
         run: |
-          # Clone the official patched SDKs directly (no API calls needed)
+          rm -rf $THEOS/sdks
           git clone --depth 1 https://github.com/theos/sdks.git $THEOS/sdks
 
       - name: Build IPA
         run: |
+          # ensure GNU make is first in PATH
+          export PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
+          # tell the compiler where to find libarchive (keg-only)
+          export LDFLAGS="-L/opt/homebrew/opt/libarchive/lib"
+          export CPPFLAGS="-I/opt/homebrew/opt/libarchive/include"
           make package FINALPACKAGE=1
 
       - name: Upload IPA
