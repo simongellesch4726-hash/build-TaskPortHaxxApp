@@ -3,13 +3,29 @@ on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      THEOS: /Users/runner/theos
     steps:
       - uses: actions/checkout@v4
-      - name: Install Theos
-        run: bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/install-theos)"
-      - name: Build
-        run: make package FINALPACKAGE=1
-      - name: Upload IPA artifact
+
+      - name: Install build dependencies
+        run: |
+          brew install libarchive ldid make
+
+      - name: Clone Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git $THEOS
+
+      - name: Install patched SDKs
+        run: |
+          # Clone the official patched SDKs directly (no API calls needed)
+          git clone --depth 1 https://github.com/theos/sdks.git $THEOS/sdks
+
+      - name: Build IPA
+        run: |
+          make package FINALPACKAGE=1
+
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: TaskPortHaxxApp.ipa
